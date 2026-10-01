@@ -11,6 +11,7 @@ class TripEntity {
 
   final String? coverImageUrl;
   final String? description;
+  final double? budget;
 
   const TripEntity({
     required this.id,
@@ -22,5 +23,6 @@ class TripEntity {
     required this.endDate,
     this.coverImageUrl,
     this.description,
+    this.budget,
   });
 }

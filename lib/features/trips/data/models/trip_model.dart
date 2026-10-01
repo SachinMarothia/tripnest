@@ -13,6 +13,7 @@ class TripModel extends TripEntity {
     required super.endDate,
     super.coverImageUrl,
     super.description,
+    super.budget,
   });
 
   factory TripModel.fromMap(
@@ -29,6 +30,7 @@ class TripModel extends TripEntity {
       endDate: (map['endDate'] as Timestamp).toDate(),
       coverImageUrl: map['coverImageUrl'] as String?,
       description: map['description'] as String?,
+      budget: (map['budget'] as num?)?.toDouble(),
     );
   }
 
@@ -43,6 +45,7 @@ class TripModel extends TripEntity {
       endDate: trip.endDate,
       coverImageUrl: trip.coverImageUrl,
       description: trip.description,
+      budget: trip.budget,
     );
   }
 
@@ -56,6 +59,7 @@ class TripModel extends TripEntity {
       'endDate': Timestamp.fromDate(endDate),
       'coverImageUrl': coverImageUrl,
       'description': description,
+      'budget': budget,
     };
   }
 }

@@ -10,7 +10,8 @@ import '../bloc/trips_event.dart';
 import '../bloc/trips_state.dart';
 
 class CreateTripPage extends StatefulWidget {
-  const CreateTripPage({super.key});
+  final String? initialDestination;
+  const CreateTripPage({super.key, this.initialDestination});
 
   @override
   State<CreateTripPage> createState() => _CreateTripPageState();
@@ -23,9 +24,22 @@ class _CreateTripPageState extends State<CreateTripPage> {
   final _originController = TextEditingController();
   final _destinationController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _budgetController = TextEditingController();
 
   DateTime? _startDate;
   DateTime? _endDate;
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    final destination = widget.initialDestination;
+
+    if (destination != null && destination.trim().isNotEmpty) {
+      _destinationController.text = destination.trim();
+    }
+  }
 
   @override
   void dispose() {
@@ -33,6 +47,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
     _destinationController.dispose();
     _descriptionController.dispose();
     _originController.dispose();
+    _budgetController.dispose();
 
     super.dispose();
   }
@@ -118,6 +133,9 @@ class _CreateTripPageState extends State<CreateTripPage> {
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
+      budget: _budgetController.text.trim().isEmpty
+          ? null
+          : double.parse(_budgetController.text.trim()),
     );
 
     context.read<TripsBloc>().add(
@@ -136,17 +154,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
         body: BlocConsumer<TripsBloc, TripsState>(
           listener: (context, state) {
             if (state is TripOperationSuccess) {
-              final authState = context.read<AuthBloc>().state;
-
-              if (authState is AuthAuthenticated) {
-                context.read<TripsBloc>().add(
-                  TripsLoadRequested(
-                    userId: authState.user.id,
-                  ),
-                );
-              }
-
-              context.pop();
+              context.pop(true);
             }
 
             if (state is TripsFailure) {
@@ -233,6 +241,37 @@ class _CreateTripPageState extends State<CreateTripPage> {
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Please enter the destination.';
+                          }
+
+                          return null;
+                        },
+                      ),
+
+                      SizedBox(height: 16,),
+                      TextFormField(
+                        controller: _budgetController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Budget',
+                          hintText: '30000',
+                          prefixIcon: Icon(Icons.currency_rupee_rounded),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return null;
+                          }
+
+                          final budget = double.tryParse(value.trim());
+
+                          if (budget == null) {
+                            return 'Please enter a valid budget.';
+                          }
+
+                          if (budget < 0) {
+                            return 'Budget cannot be negative.';
                           }
 
                           return null;
