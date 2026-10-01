@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'app/theme/theme_cubit.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -10,6 +11,13 @@ import 'features/auth/domain/usecases/login_user.dart';
 import 'features/auth/domain/usecases/logout_user.dart';
 import 'features/auth/domain/usecases/register_user.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/explore/data/datasources/nominatim_places_remote_data_source.dart';
+import 'features/explore/data/datasources/places_remote_data_source.dart';
+import 'features/explore/data/repositories/places_repository_impl.dart';
+import 'features/explore/domain/repositories/places_repository.dart';
+import 'features/explore/domain/usecases/get_place_details.dart';
+import 'features/explore/domain/usecases/search_places.dart';
+import 'features/explore/presentation/bloc/explore_bloc.dart';
 import 'features/trips/data/datasources/trips_remote_data_source.dart';
 import 'features/trips/data/repositories/trips_repository_impl.dart';
 import 'features/trips/domain/repositories/trips_repository.dart';
@@ -92,6 +100,47 @@ void initializeDependencies() {
       getTripById: sl<GetTripById>(),
       updateTrip: sl<UpdateTrip>(),
       deleteTrip: sl<DeleteTrip>(),
+    ),
+  );
+
+
+  // ====================
+ // Explore
+ // ====================
+
+  sl.registerLazySingleton<http.Client>(
+        () => http.Client(),
+  );
+
+  sl.registerLazySingleton<PlacesRemoteDataSource>(
+        () => NominatimPlacesRemoteDataSource(
+      client: sl<http.Client>(),
+    ),
+  );
+
+  sl.registerLazySingleton<PlacesRepository>(
+        () => PlacesRepositoryImpl(
+      remoteDataSource: sl<PlacesRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<SearchPlaces>(
+        () => SearchPlaces(
+      sl<PlacesRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetPlaceDetails>(
+        () => GetPlaceDetails(
+      sl<PlacesRepository>(),
+    ),
+  );
+
+  // Explore Bloc
+  sl.registerFactory<ExploreBloc>(
+        () => ExploreBloc(
+      searchPlaces: sl<SearchPlaces>(),
+      getPlaceDetails: sl<GetPlaceDetails>(),
     ),
   );
 

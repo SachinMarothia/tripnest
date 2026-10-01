@@ -30,6 +30,7 @@ class TripsRemoteDataSource {
       endDate: trip.endDate,
       coverImageUrl: trip.coverImageUrl,
       description: trip.description,
+      budget: trip.budget,
     );
   }
 

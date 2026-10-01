@@ -10,25 +10,20 @@ import '../bloc/trips_state.dart';
 class TripDetailsPage extends StatefulWidget {
   final String tripId;
 
-  const TripDetailsPage({
-    super.key,
-    required this.tripId,
-  });
+  const TripDetailsPage({super.key, required this.tripId});
 
   @override
   State<TripDetailsPage> createState() => _TripDetailsPageState();
 }
 
 class _TripDetailsPageState extends State<TripDetailsPage> {
+  bool _tripWasUpdated = false;
+
   @override
   void initState() {
     super.initState();
 
-    context.read<TripsBloc>().add(
-      TripDetailsRequested(
-        tripId: widget.tripId,
-      ),
-    );
+    context.read<TripsBloc>().add(TripDetailsRequested(tripId: widget.tripId));
   }
 
   Future<void> _showDeleteConfirmation() async {
@@ -62,156 +57,156 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
       return;
     }
 
-    context.read<TripsBloc>().add(
-      TripDeleteRequested(
-        tripId: widget.tripId,
-      ),
-    );
+    context.read<TripsBloc>().add(TripDeleteRequested(tripId: widget.tripId));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trip Details'),
-        actions: [
-          IconButton(
-            onPressed: _showDeleteConfirmation,
-            tooltip: 'Delete trip',
-            icon: const Icon(Icons.delete_outline),
-          ),
-        ],
-      ),
-      body: BlocConsumer<TripsBloc, TripsState>(
-        listener: (context, state) {
-          if (state is TripOperationSuccess) {
-            Navigator.of(context).pop(true);
-          }
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
 
+        Navigator.of(context).pop(_tripWasUpdated);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Trip Details'),
+          actions: [
+            IconButton(
+              onPressed: _showDeleteConfirmation,
+              tooltip: 'Delete trip',
+              icon: const Icon(Icons.delete_outline),
+            ),
+          ],
+        ),
+        body: BlocConsumer<TripsBloc, TripsState>(
+          listener: (context, state) {
+            if (state is TripOperationSuccess) {
+              Navigator.of(context).pop(true);
+            }
 
-          if (state is TripsFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-              ),
-            );
-          }
+            if (state is TripsFailure) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.message)));
+            }
+          },
+          builder: (context, state) {
+            if (state is TripsInitial || state is TripsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        },
-        builder: (context, state) {
-          if (state is TripsInitial || state is TripsLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (state is TripsFailure) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  state.message,
-                  textAlign: TextAlign.center,
+            if (state is TripsFailure) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(state.message, textAlign: TextAlign.center),
                 ),
-              ),
-            );
-          }
+              );
+            }
 
-          if (state is TripDetailsLoaded) {
-            final trip = state.trip;
+            if (state is TripDetailsLoaded) {
+              final trip = state.trip;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    trip.title,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      trip.title,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
 
-                  const SizedBox(height: 24),
-
-                  _DetailRow(
-                    icon: Icons.trip_origin_rounded,
-                    label: 'From',
-                    value: trip.origin,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  _DetailRow(
-                    icon: Icons.location_on_outlined,
-                    label: 'To',
-                    value: trip.destination,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  _DetailRow(
-                    icon: Icons.calendar_today_outlined,
-                    label: 'Start Date',
-                    value: _formatDate(trip.startDate),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  _DetailRow(
-                    icon: Icons.event_outlined,
-                    label: 'End Date',
-                    value: _formatDate(trip.endDate),
-                  ),
-
-                  if (trip.description != null &&
-                      trip.description!.isNotEmpty) ...[
                     const SizedBox(height: 24),
 
-                    Text(
-                      'Description',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    _DetailRow(
+                      icon: Icons.trip_origin_rounded,
+                      label: 'From',
+                      value: trip.origin,
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
 
-                    Text(
-                      trip.description!,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                    _DetailRow(
+                      icon: Icons.location_on_outlined,
+                      label: 'To',
+                      value: trip.destination,
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final wasUpdated = await context.pushNamed<bool>(
-                            RouteNames.editTrip,
-                            pathParameters: {
-                              'tripId': trip.id,
-                            },
-                            extra: trip,
-                          );
+                    _DetailRow(
+                      icon: Icons.calendar_today_outlined,
+                      label: 'Start Date',
+                      value: _formatDate(trip.startDate),
+                    ),
 
-                          if (wasUpdated == true && context.mounted) {
-                            context.read<TripsBloc>().add(
-                              TripDetailsRequested(
-                                tripId: trip.id,
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Edit Trip'),
+                    const SizedBox(height: 16),
+
+                    _DetailRow(
+                      icon: Icons.event_outlined,
+                      label: 'End Date',
+                      value: _formatDate(trip.endDate),
+                    ),
+
+                    if (trip.description != null &&
+                        trip.description!.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+
+                      Text(
+                        'Description',
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                    ),
-                  ],
-                ],
-              ),
-            );
-          }
 
-          return const SizedBox.shrink();
-        },
+                      const SizedBox(height: 8),
+
+                      Text(
+                        trip.description!,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _DetailRow(
+                        icon: Icons.currency_rupee,
+                        label: 'Budget',
+                        value: trip.budget.toString(),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            final wasUpdated = await context.pushNamed<bool>(
+                              RouteNames.editTrip,
+                              pathParameters: {'tripId': trip.id},
+                              extra: trip,
+                            );
+
+                            if (wasUpdated == true && context.mounted) {
+                              _tripWasUpdated = true;
+                              context.read<TripsBloc>().add(
+                                TripDetailsRequested(tripId: trip.id),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('Edit Trip'),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -236,6 +231,7 @@ class _DetailRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Icon(icon),
 
@@ -245,17 +241,11 @@ class _DetailRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
+              Text(label, style: Theme.of(context).textTheme.labelLarge),
 
               const SizedBox(height: 4),
 
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
+              Text(value, style: Theme.of(context).textTheme.bodyLarge),
             ],
           ),
         ),

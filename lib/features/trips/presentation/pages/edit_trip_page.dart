@@ -25,6 +25,7 @@ class _EditTripPageState extends State<EditTripPage> {
   late final TextEditingController _originController;
   late final TextEditingController _destinationController;
   late final TextEditingController _descriptionController;
+  late final TextEditingController _budgetController;
 
   late DateTime _startDate;
   late DateTime _endDate;
@@ -35,6 +36,10 @@ class _EditTripPageState extends State<EditTripPage> {
 
     _titleController = TextEditingController(
       text: widget.trip.title,
+    );
+
+    _budgetController = TextEditingController(
+      text: widget.trip.budget?.toString() ?? '',
     );
 
     _originController = TextEditingController(
@@ -59,6 +64,7 @@ class _EditTripPageState extends State<EditTripPage> {
     _originController.dispose();
     _destinationController.dispose();
     _descriptionController.dispose();
+    _budgetController.dispose();
 
     super.dispose();
   }
@@ -116,6 +122,9 @@ class _EditTripPageState extends State<EditTripPage> {
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
+      budget: _budgetController.text.trim().isEmpty
+          ? null
+          : double.parse(_budgetController.text.trim()),
     );
 
     context.read<TripsBloc>().add(
@@ -229,6 +238,37 @@ class _EditTripPageState extends State<EditTripPage> {
                     ),
 
                     const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _budgetController,
+                      enabled: !isLoading,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Budget',
+                        hintText: '30000',
+                        prefixIcon: Icon(Icons.currency_rupee_rounded),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return null;
+                        }
+
+                        final budget = double.tryParse(value.trim());
+
+                        if (budget == null) {
+                          return 'Please enter a valid budget.';
+                        }
+
+                        if (budget < 0) {
+                          return 'Budget cannot be negative.';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 16,),
 
                     // Description
                     TextFormField(

@@ -115,17 +115,6 @@ class _TripsPageState extends State<TripsPage> {
           return const SizedBox.shrink();
         },
       ),
-
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.pushNamed(
-            RouteNames.createTrip,
-            extra: context.read<TripsBloc>(),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('New Trip'),
-      ),
     );
   }
 }

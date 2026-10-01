@@ -9,4 +9,6 @@ abstract final class RoutePaths {
   static const String createTrip = '/trips/create';
   static const String tripDetails = '/trips/:tripId';
   static const String editTrip = '/trips/:tripId/edit';
+  static const String explore = '/explore';
+  static const String profile = '/profile';
 }

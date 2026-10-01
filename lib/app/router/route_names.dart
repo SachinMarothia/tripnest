@@ -9,5 +9,7 @@ abstract final class RouteNames {
   static const String createTrip = 'createTrip';
   static const String tripDetails = 'tripDetails';
   static const String editTrip = 'editTrip';
+  static const String explore = 'explore';
+  static const String profile = 'profile';
 
 }
