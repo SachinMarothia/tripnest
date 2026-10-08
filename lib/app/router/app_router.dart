@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/explore/presentation/bloc/explore_bloc.dart';
+import '../../features/itinerary/presentation/bloc/itinerary_bloc.dart';
 import '../shell/main_shell.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -159,10 +160,18 @@ abstract final class AppRouter {
         path: RoutePaths.tripDetails,
         name: RouteNames.tripDetails,
         builder: (context, state) {
-          final tripId = state.pathParameters['tripId']!;
+          final tripId =
+          state.pathParameters['tripId']!;
 
-          return BlocProvider(
-            create: (_) => sl<TripsBloc>(),
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => sl<TripsBloc>(),
+              ),
+              BlocProvider(
+                create: (_) => sl<ItineraryBloc>(),
+              ),
+            ],
             child: TripDetailsPage(
               tripId: tripId,
             ),
