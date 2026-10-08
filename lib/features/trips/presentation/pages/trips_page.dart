@@ -8,6 +8,7 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/trips_bloc.dart';
 import '../bloc/trips_event.dart';
 import '../bloc/trips_state.dart';
+import '../widgets/trip_card.dart';
 
 class TripsPage extends StatefulWidget {
   const TripsPage({super.key});
@@ -70,43 +71,35 @@ class _TripsPageState extends State<TripsPage> {
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: state.trips.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final trip = state.trips[index];
 
-                return Card(
-                  child: ListTile(
-                    onTap: () async {
-                      final shouldRefresh = await context.pushNamed<bool>(
-                        RouteNames.tripDetails,
-                        pathParameters: {
-                          'tripId': trip.id,
-                        },
-                      );
+                return TripCard(
+                  trip: trip,
+                  onTap: () async {
+                    final shouldRefresh =
+                    await context.pushNamed<bool>(
+                      RouteNames.tripDetails,
+                      pathParameters: {
+                        'tripId': trip.id,
+                      },
+                    );
 
-                      if (shouldRefresh == true && context.mounted) {
-                        final authState = context.read<AuthBloc>().state;
+                    if (shouldRefresh == true &&
+                        context.mounted) {
+                      final authState =
+                          context.read<AuthBloc>().state;
 
-                        if (authState is AuthAuthenticated) {
-                          context.read<TripsBloc>().add(
-                            TripsLoadRequested(
-                              userId: authState.user.id,
-                            ),
-                          );
-                        }
+                      if (authState is AuthAuthenticated) {
+                        context.read<TripsBloc>().add(
+                          TripsLoadRequested(
+                            userId: authState.user.id,
+                          ),
+                        );
                       }
-                    },
-                    leading: const Icon(
-                      Icons.flight_takeoff_rounded,
-                    ),
-                    title: Text(trip.title),
-                    subtitle: Text(
-                      '${trip.origin} → ${trip.destination}',
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right_rounded,
-                    ),
-                  ),
+                    }
+                  },
                 );
               },
             );
