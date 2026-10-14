@@ -7,6 +7,9 @@ class ItineraryEntity {
   final int? hour;
   final int? minute;
   final String? location;
+  final double? latitude;
+  final double? longitude;
+  final bool isCompleted;
 
   const ItineraryEntity({
     required this.id,
@@ -17,5 +20,8 @@ class ItineraryEntity {
     this.hour,
     this.minute,
     this.location,
+    this.latitude,
+    this.longitude,
+    this.isCompleted = false
   });
 }

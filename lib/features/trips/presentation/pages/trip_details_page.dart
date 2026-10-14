@@ -248,7 +248,10 @@ class _TripDetailsPageState
                       ),
                     ] else ...[
                       ItinerarySection(
+                        tripId: trip.id,
                         destination: trip.destination,
+                        tripStartDate: trip.startDate,
+                        tripEndDate: trip.endDate,
                       ),
                     ],
                   ],

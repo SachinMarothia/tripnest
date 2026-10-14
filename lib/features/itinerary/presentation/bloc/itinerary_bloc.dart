@@ -84,8 +84,6 @@ class ItineraryBloc
       ItineraryUpdateRequested event,
       Emitter<ItineraryState> emit,
       ) async {
-    emit(const ItineraryLoading());
-
     try {
       await updateItineraryItem(event.item);
 
