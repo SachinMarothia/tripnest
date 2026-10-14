@@ -10,6 +10,9 @@ class ItineraryModel extends ItineraryEntity {
     super.hour,
     super.minute,
     super.location,
+    super.latitude,
+    super.longitude,
+    super.isCompleted,
   });
 
   factory ItineraryModel.fromMap(
@@ -27,6 +30,9 @@ class ItineraryModel extends ItineraryEntity {
       hour: map['hour'] as int?,
       minute: map['minute'] as int?,
       location: map['location'] as String?,
+      latitude: (map['latitude'] as num?)?.toDouble(),
+      longitude: (map['longitude'] as num?)?.toDouble(),
+      isCompleted: map['isCompleted'] as bool? ?? false,
     );
   }
 
@@ -39,6 +45,9 @@ class ItineraryModel extends ItineraryEntity {
       'hour': hour,
       'minute': minute,
       'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
+      'isCompleted': isCompleted,
     };
   }
 
@@ -54,6 +63,9 @@ class ItineraryModel extends ItineraryEntity {
       hour: entity.hour,
       minute: entity.minute,
       location: entity.location,
+      latitude: entity.latitude,
+      longitude: entity.longitude,
+      isCompleted: entity.isCompleted,
     );
   }
 }
