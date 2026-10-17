@@ -17,6 +17,7 @@ class AddItineraryItemPage extends StatefulWidget {
   final DateTime tripStartDate;
   final DateTime tripEndDate;
   final ItineraryEntity? activity;
+  final PlaceEntity? initialPlace;
 
   const AddItineraryItemPage({
     super.key,
@@ -24,6 +25,7 @@ class AddItineraryItemPage extends StatefulWidget {
     required this.tripStartDate,
     required this.tripEndDate,
     this.activity,
+    this.initialPlace,
   });
 
   @override
@@ -76,6 +78,19 @@ class _AddItineraryItemPageState extends State<AddItineraryItemPage> {
           minute: activity.minute!,
         );
       }
+    }
+    else if (widget.initialPlace != null) {
+      final place = widget.initialPlace!;
+
+      _titleController.text = place.name;
+
+      _locationController.text =
+      place.address?.trim().isNotEmpty == true
+          ? place.address!
+          : place.name;
+
+      _selectedLatitude = place.latitude;
+      _selectedLongitude = place.longitude;
     }
   }
 

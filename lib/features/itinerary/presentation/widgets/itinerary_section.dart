@@ -23,42 +23,43 @@ class ItinerarySection extends StatelessWidget {
   });
 
   Map<DateTime, List<ItineraryEntity>> _groupByDate(
-    List<ItineraryEntity> items,
-  ) {
+      List<ItineraryEntity> items,
+      ) {
     final grouped = <DateTime, List<ItineraryEntity>>{};
 
     for (final item in items) {
-      final date = DateTime(item.date.year, item.date.month, item.date.day);
+      final date = DateTime(
+        item.date.year,
+        item.date.month,
+        item.date.day,
+      );
 
       grouped.putIfAbsent(date, () => []).add(item);
     }
 
-    final sortedDates = grouped.keys.toList()..sort();
-
+    // Sort activities: timed first, untimed last.
     for (final activities in grouped.values) {
       activities.sort((a, b) {
-        final aHasTime = a.hour != null && a.minute != null;
-        final bHasTime = b.hour != null && b.minute != null;
+        final aTime = (a.hour != null && a.minute != null)
+            ? a.hour! * 60 + a.minute!
+            : null;
 
-        if (!aHasTime && !bHasTime) return 0;
-        if (!aHasTime) return 1;
-        if (!bHasTime) return -1;
+        final bTime = (b.hour != null && b.minute != null)
+            ? b.hour! * 60 + b.minute!
+            : null;
 
-        final aMinutes = a.hour! * 60 + a.minute!;
-        final bMinutes = b.hour! * 60 + b.minute!;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
 
-        return aMinutes.compareTo(bMinutes);
+        return aTime.compareTo(bTime);
       });
     }
 
+    final sortedDates = grouped.keys.toList()..sort();
+
     return {
-      for (final date in sortedDates)
-        date: grouped[date]!
-          ..sort((a, b) {
-            final aMinutes = (a.hour ?? 0) * 60 + (a.minute ?? 0);
-            final bMinutes = (b.hour ?? 0) * 60 + (b.minute ?? 0);
-            return aMinutes.compareTo(bMinutes);
-          }),
+      for (final date in sortedDates) date: grouped[date]!,
     };
   }
 
@@ -66,6 +67,7 @@ class ItinerarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    // No change here yet.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,17 +111,62 @@ class ItinerarySection extends StatelessWidget {
             if (state is ItineraryInitial || state is ItineraryLoading) {
               return const _ItineraryLoading();
             }
-
             if (state is ItineraryFailure) {
+              final cachedItems = context.read<ItineraryBloc>().cachedItems;
+
+              if (cachedItems.isNotEmpty) {
+                final groupedActivities = _groupByDate(cachedItems);
+
+                return Column(
+                  children: [
+                    _ItineraryError(message: state.message),
+                    const SizedBox(height: 16),
+                    for (final entry in groupedActivities.entries)
+                      ItineraryDayCard(
+                        date: entry.key,
+                        dayNumber:
+                            DateTime.utc(
+                                  entry.key.year,
+                                  entry.key.month,
+                                  entry.key.day,
+                                )
+                                .difference(
+                                  DateTime.utc(
+                                    tripStartDate.year,
+                                    tripStartDate.month,
+                                    tripStartDate.day,
+                                  ),
+                                )
+                                .inDays +
+                            1,
+                        activities: entry.value,
+                        onEdit: (activity) => _editActivity(
+                          context,
+                          activity,
+                          tripStartDate,
+                          tripEndDate,
+                        ),
+                        onDelete: (activity) =>
+                            _deleteActivity(context, activity),
+                      ),
+                  ],
+                );
+              }
+
               return _ItineraryError(message: state.message);
             }
 
-            if (state is ItineraryLoaded) {
-              if (state.items.isEmpty) {
+            if (state is ItineraryLoaded ||
+                state is ItineraryOperationSuccess) {
+              final items = state is ItineraryLoaded
+                  ? state.items
+                  : context.read<ItineraryBloc>().cachedItems;
+
+              if (items.isEmpty) {
                 return _EmptyItinerary(destination: destination);
               }
 
-              final groupedActivities = _groupByDate(state.items);
+              final groupedActivities = _groupByDate(items);
               final days = groupedActivities.entries.toList();
 
               return Column(
@@ -275,9 +322,9 @@ class _ItineraryError extends StatelessWidget {
 }
 
 Future<void> _deleteActivity(
-    BuildContext context,
-    ItineraryEntity activity,
-    ) async {
+  BuildContext context,
+  ItineraryEntity activity,
+) async {
   final shouldDelete = await showDialog<bool>(
     context: context,
     builder: (dialogContext) {
@@ -285,7 +332,7 @@ Future<void> _deleteActivity(
         title: const Text('Delete Activity?'),
         content: Text(
           'Are you sure you want to delete '
-              '"${activity.title}"? This action cannot be undone.',
+          '"${activity.title}"? This action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -310,19 +357,16 @@ Future<void> _deleteActivity(
   }
 
   context.read<ItineraryBloc>().add(
-    ItineraryDeleteRequested(
-      tripId: activity.tripId,
-      itemId: activity.id,
-    ),
+    ItineraryDeleteRequested(tripId: activity.tripId, itemId: activity.id),
   );
 }
 
 Future<void> _editActivity(
-    BuildContext context,
-    ItineraryEntity activity,
-    DateTime startDate,
-    DateTime endDate,
-    ) async {
+  BuildContext context,
+  ItineraryEntity activity,
+  DateTime startDate,
+  DateTime endDate,
+) async {
   final itineraryBloc = context.read<ItineraryBloc>();
 
   await Navigator.of(context).push(
