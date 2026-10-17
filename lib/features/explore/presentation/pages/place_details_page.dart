@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:tripmate/features/explore/presentation/pages/select_trip_page.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../domain/entities/place_entity.dart';
@@ -220,6 +221,33 @@ class PlaceDetailsPage extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  final saved = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                      builder: (_) => SelectTripPage(
+                        place: place,
+                      ),
+                    ),
+                  );
+
+                  if (!context.mounted || saved != true) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Place added to your trip successfully!'),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.playlist_add_rounded),
+                label: const Text('Add to Existing Trip'),
               ),
             ),
           ],

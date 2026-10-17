@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_names.dart';
 import '../../data/models/destination_model.dart';
 
 class DestinationDetailsPage extends StatelessWidget {
@@ -244,13 +246,15 @@ class DestinationDetailsPage extends StatelessWidget {
                     height: 54,
                     child: FilledButton.icon(
                       onPressed: () {
-                        // Later:
-                        // Open CreateTripPage and prefill
-                        // destination.name.
+                        context.pushNamed(
+                          RouteNames.createTrip,
+                          extra: destination.name,
+                        );
                       },
                       icon: const Icon(
                         Icons.add_rounded,
                       ),
+
                       label: Text(
                         'Plan a Trip to ${destination.name}',
                       ),

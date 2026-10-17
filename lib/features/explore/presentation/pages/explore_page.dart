@@ -8,6 +8,7 @@ import '../bloc/explore_bloc.dart';
 import '../bloc/explore_event.dart';
 import '../bloc/explore_state.dart';
 import '../widgets/explore_destination_card.dart';
+import 'destination_details_page.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -391,7 +392,15 @@ class _ExplorePageState extends State<ExplorePage> {
 
         return ExploreDestinationCard(
           destination: destination,
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => DestinationDetailsPage(
+                  destination: destination,
+                ),
+              ),
+            );
+          },
         );
       },
     );
