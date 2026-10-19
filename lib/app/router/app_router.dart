@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/expenses/presentation/pages/expenses_page.dart';
 import '../../features/explore/presentation/bloc/explore_bloc.dart';
 import '../../features/itinerary/presentation/bloc/itinerary_bloc.dart';
 import '../shell/main_shell.dart';
@@ -108,16 +109,23 @@ abstract final class AppRouter {
             },
           ),
 
+
           GoRoute(
             path: RoutePaths.explore,
             name: RouteNames.explore,
             builder: (context, state) {
+              final category =
+                  state.uri.queryParameters['category'] ?? 'All';
+
               return BlocProvider(
                 create: (_) => sl<ExploreBloc>(),
-                child: const ExplorePage(),
+                child: ExplorePage(
+                  initialCategory: category,
+                ),
               );
             },
           ),
+
 
           GoRoute(
             path: RoutePaths.trips,
@@ -178,6 +186,25 @@ abstract final class AppRouter {
           );
         },
       ),
+
+
+      GoRoute(
+        path: RoutePaths.expenses,
+        name: RouteNames.expenses,
+        builder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+
+          final budget = state.extra is double
+              ? state.extra as double
+              : null;
+
+          return ExpensesPage(
+            tripId: tripId,
+            budget: budget,
+          );
+        },
+      ),
+
 
       GoRoute(
         path: RoutePaths.editTrip,

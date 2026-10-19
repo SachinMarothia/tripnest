@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/theme_cubit.dart';
@@ -38,56 +37,53 @@ class ProfilePage extends StatelessWidget {
     }
   }
 
+
   void _showAppearanceDialog(BuildContext context) {
-    showDialog(
+    final themeCubit = context.read<ThemeCubit>();
+
+    showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return BlocProvider.value(
-          value: context.read<ThemeCubit>(),
+          value: themeCubit,
           child: AlertDialog(
             title: const Text('Appearance'),
             content: BlocBuilder<ThemeCubit, ThemeMode>(
               builder: (context, selectedTheme) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RadioListTile<ThemeMode>(
-                      title: const Text('Light'),
-                      secondary: const Icon(Icons.light_mode_outlined),
-                      value: ThemeMode.light,
-                      groupValue: selectedTheme,
-                      onChanged: (value) {
-                        if (value != null) {
-                          context.read<ThemeCubit>().changeTheme(value);
-                          Navigator.pop(dialogContext);
-                        }
-                      },
-                    ),
-                    RadioListTile<ThemeMode>(
-                      title: const Text('Dark'),
-                      secondary: const Icon(Icons.dark_mode_outlined),
-                      value: ThemeMode.dark,
-                      groupValue: selectedTheme,
-                      onChanged: (value) {
-                        if (value != null) {
-                          context.read<ThemeCubit>().changeTheme(value);
-                          Navigator.pop(dialogContext);
-                        }
-                      },
-                    ),
-                    RadioListTile<ThemeMode>(
-                      title: const Text('System default'),
-                      secondary: const Icon(Icons.settings_brightness_outlined),
-                      value: ThemeMode.system,
-                      groupValue: selectedTheme,
-                      onChanged: (value) {
-                        if (value != null) {
-                          context.read<ThemeCubit>().changeTheme(value);
-                          Navigator.pop(dialogContext);
-                        }
-                      },
-                    ),
-                  ],
+                return RadioGroup<ThemeMode>(
+                  groupValue: selectedTheme,
+                  onChanged: (ThemeMode? value) {
+                    if (value == null) return;
+
+                    themeCubit.changeTheme(value);
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      RadioListTile<ThemeMode>(
+                        title: Text('Light'),
+                        secondary: Icon(
+                          Icons.light_mode_outlined,
+                        ),
+                        value: ThemeMode.light,
+                      ),
+                      RadioListTile<ThemeMode>(
+                        title: Text('Dark'),
+                        secondary: Icon(
+                          Icons.dark_mode_outlined,
+                        ),
+                        value: ThemeMode.dark,
+                      ),
+                      RadioListTile<ThemeMode>(
+                        title: Text('System default'),
+                        secondary: Icon(
+                          Icons.settings_brightness_outlined,
+                        ),
+                        value: ThemeMode.system,
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -96,6 +92,7 @@ class ProfilePage extends StatelessWidget {
       },
     );
   }
+
 
   void _showAboutDialog(BuildContext context) {
     showAboutDialog(

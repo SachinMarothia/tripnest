@@ -19,24 +19,67 @@ class MainShell extends StatelessWidget {
     return Scaffold(
       body: child,
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: onCreateTrip,
-        backgroundColor: Color.lerp(
-          Theme.of(context).colorScheme.primary,
-          Colors.black,
-          0.10,
+
+
+      floatingActionButton: Container(
+        width: 62,
+        height: 62,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Color.lerp(
+                Theme.of(context).colorScheme.primary,
+                Colors.black,
+                0.18,
+              )!,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withValues(alpha: 0.22),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        child: const Icon(
-          Icons.add_rounded,
-          size: 28,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(17),
+          child: InkWell(
+            onTap: onCreateTrip,
+            borderRadius: BorderRadius.circular(17),
+            child: Center(
+              child: Icon(
+                Icons.add_rounded,
+                size: 32,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
+          ),
         ),
       ),
+
+
 
       floatingActionButtonLocation:
       FloatingActionButtonLocation.centerDocked,
 
       bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 8,
+        shadowColor: Theme.of(context)
+            .colorScheme
+            .shadow
+            .withValues(alpha: 0.12),
+
         child: Row(
           children: [
             Expanded(
@@ -103,9 +146,11 @@ class _NavigationItem extends StatelessWidget {
     required this.onTap,
   });
 
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     final color = isSelected
         ? colorScheme.primary
@@ -116,26 +161,41 @@ class _NavigationItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: 6,
+          vertical: 4,
+          horizontal: 2,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? selectedIcon : icon,
-              color: color,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              width: 46,
+              height: 30,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? colorScheme.primary.withValues(alpha: 0.12)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                isSelected ? selectedIcon : icon,
+                size: 23,
+                color: color,
+              ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               label,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall
-                  ?.copyWith(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
                 color: color,
+                fontSize: 11,
                 fontWeight: isSelected
-                    ? FontWeight.w600
-                    : FontWeight.normal,
+                    ? FontWeight.w700
+                    : FontWeight.w500,
               ),
             ),
           ],
@@ -143,4 +203,5 @@ class _NavigationItem extends StatelessWidget {
       ),
     );
   }
+
 }

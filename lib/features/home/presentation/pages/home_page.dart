@@ -7,6 +7,8 @@ import '../../../../app/router/route_names.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 
+import '../../../explore/data/datasources/local_destination_data.dart';
+import '../../../explore/presentation/pages/destination_details_page.dart';
 import '../../../trips/domain/entities/trip_entity.dart';
 import '../../../trips/presentation/bloc/trips_bloc.dart';
 import '../../../trips/presentation/bloc/trips_event.dart';
@@ -16,6 +18,7 @@ import '../widgets/explore_destinations_section.dart';
 import '../widgets/home_categories.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_search_bar.dart';
+import '../widgets/home_trip_stats.dart';
 import '../widgets/upcoming_trip_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -88,17 +91,12 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               HomeHeader(
-                onNotificationTap: () {
-                  // Notifications later.
-                },
                 onProfileTap: () {
-                  context.goNamed(
-                    RouteNames.profile,
-                  );
+                  context.goNamed(RouteNames.profile);
                 },
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
 
               HomeSearchBar(
                 onTap: () {
@@ -108,12 +106,40 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-              const HomeCategories(),
+              HomeCategories(
+                onCategorySelected: (category) {
+                  context.goNamed(
+                    RouteNames.explore,
+                    queryParameters: {
+                      'category': category,
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 18),
 
-              const SizedBox(height: 30),
+              BlocBuilder<TripsBloc, TripsState>(
+                builder: (context, state) {
+                  if (state is TripsLoaded) {
+                    return HomeTripStats(trips: state.trips);
+                  }
 
+                  if (state is TripsLoading) {
+                    return const SizedBox(
+                      height: 120,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
+
+              const SizedBox(height: 22),
               Row(
                 children: [
                   Text(
@@ -170,7 +196,7 @@ class _HomePageState extends State<HomePage> {
                     return Column(
                       children: [
                         SizedBox(
-                          height: 260,
+                          height: 220,
                           child: PageView.builder(
                             itemCount: upcomingTrips.length,
                             onPageChanged: (index) {
@@ -209,7 +235,10 @@ class _HomePageState extends State<HomePage> {
 
                           _TripPageIndicator(
                             itemCount: upcomingTrips.length,
-                            currentIndex: _currentTripIndex,
+                            currentIndex: _currentTripIndex.clamp(
+                              0,
+                              upcomingTrips.length - 1,
+                            ),
                           ),
                         ],
                       ],
@@ -219,19 +248,34 @@ class _HomePageState extends State<HomePage> {
                   return const SizedBox.shrink();
                 },
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
+
 
               ExploreDestinationsSection(
                 onSeeAllTap: () {
-                  context.goNamed(
-                    RouteNames.explore,
-                  );
+                  context.goNamed(RouteNames.explore);
                 },
-                onDestinationTap: (destination) {
-                  // Later:
-                  // Open Explore with selected destination/category.
+                onDestinationTap: (destinationName) {
+                  for (final destination
+                  in LocalDestinationData.destinations) {
+                    if (destination.name.toLowerCase() ==
+                        destinationName.toLowerCase()) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DestinationDetailsPage(
+                            destination: destination,
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                  }
+
+                  // Fallback if the destination is not in curated data.
+                  context.goNamed(RouteNames.explore);
                 },
               ),
+
             ],
           ),
         ),

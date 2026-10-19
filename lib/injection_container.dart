@@ -11,6 +11,14 @@ import 'features/auth/domain/usecases/login_user.dart';
 import 'features/auth/domain/usecases/logout_user.dart';
 import 'features/auth/domain/usecases/register_user.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/expenses/data/datasources/expenses_remote_data_source.dart';
+import 'features/expenses/data/repositories/expenses_repository_impl.dart';
+import 'features/expenses/domain/repositories/expenses_repository.dart';
+import 'features/expenses/domain/usecases/add_expense.dart';
+import 'features/expenses/domain/usecases/delete_expense.dart';
+import 'features/expenses/domain/usecases/get_expenses.dart';
+import 'features/expenses/domain/usecases/update_expense.dart';
+import 'features/expenses/presentation/bloc/expenses_bloc.dart';
 import 'features/explore/data/datasources/nominatim_places_remote_data_source.dart';
 import 'features/explore/data/datasources/places_remote_data_source.dart';
 import 'features/explore/data/repositories/places_repository_impl.dart';
@@ -169,6 +177,55 @@ void initializeDependencies() {
   sl.registerLazySingleton<ItineraryRemoteDataSource>(
     () => ItineraryRemoteDataSourceImpl(firestore: sl()),
   );
+
+
+
+
+  // ====================
+  // Expenses
+  // ====================
+
+  // Remote Data Source
+  sl.registerLazySingleton<ExpensesRemoteDataSource>(
+        () => ExpensesRemoteDataSource(
+      firestore: sl<FirebaseFirestore>(),
+    ),
+  );
+
+  // Repository
+  sl.registerLazySingleton<ExpensesRepository>(
+        () => ExpensesRepositoryImpl(
+      remoteDataSource: sl<ExpensesRemoteDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton<GetExpenses>(
+        () => GetExpenses(sl<ExpensesRepository>()),
+  );
+
+  sl.registerLazySingleton<AddExpense>(
+        () => AddExpense(sl<ExpensesRepository>()),
+  );
+
+  sl.registerLazySingleton<UpdateExpense>(
+        () => UpdateExpense(sl<ExpensesRepository>()),
+  );
+
+  sl.registerLazySingleton<DeleteExpense>(
+        () => DeleteExpense(sl<ExpensesRepository>()),
+  );
+
+  // Expenses BLoC
+  sl.registerFactory<ExpensesBloc>(
+        () => ExpensesBloc(
+      getExpenses: sl<GetExpenses>(),
+      addExpense: sl<AddExpense>(),
+      updateExpense: sl<UpdateExpense>(),
+      deleteExpense: sl<DeleteExpense>(),
+    ),
+  );
+
 
   // Theme
   sl.registerLazySingleton<ThemeCubit>(() => ThemeCubit());

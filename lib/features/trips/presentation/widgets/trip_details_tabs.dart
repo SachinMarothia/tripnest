@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 enum TripDetailsTab {
@@ -17,13 +18,15 @@ class TripDetailsTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
+        color: colors.surfaceContainerHighest.withValues(
+          alpha: 0.65,
+        ),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         children: [
@@ -31,23 +34,17 @@ class TripDetailsTabs extends StatelessWidget {
             child: _TabItem(
               label: 'Overview',
               icon: Icons.dashboard_outlined,
-              isSelected:
-              selectedTab == TripDetailsTab.overview,
-              onTap: () {
-                onChanged(TripDetailsTab.overview);
-              },
+              isSelected: selectedTab == TripDetailsTab.overview,
+              onTap: () => onChanged(TripDetailsTab.overview),
             ),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 4),
           Expanded(
             child: _TabItem(
               label: 'Itinerary',
               icon: Icons.route_outlined,
-              isSelected:
-              selectedTab == TripDetailsTab.itinerary,
-              onTap: () {
-                onChanged(TripDetailsTab.itinerary);
-              },
+              isSelected: selectedTab == TripDetailsTab.itinerary,
+              onTap: () => onChanged(TripDetailsTab.itinerary),
             ),
           ),
         ],
@@ -71,61 +68,61 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 10,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.surface
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: isSelected
-              ? [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(
-                alpha: 0.08,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 8,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colors.primary.withValues(alpha: 0.12)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: isSelected
+                ? Border.all(
+              color: colors.primary.withValues(alpha: 0.25),
+            )
+                : Border.all(color: Colors.transparent),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected
+                    ? colors.primary
+                    : colors.onSurfaceVariant,
               ),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 19,
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 7),
-            Flexible(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.labelLarge?.copyWith(
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  fontWeight: isSelected
-                      ? FontWeight.w700
-                      : FontWeight.w500,
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: isSelected
+                        ? colors.primary
+                        : colors.onSurfaceVariant,
+                    fontWeight: isSelected
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

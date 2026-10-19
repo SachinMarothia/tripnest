@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class HomeSearchBar extends StatelessWidget {
@@ -11,44 +12,45 @@ class HomeSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Material(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(14),
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(15),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(15),
         child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 15,
-          ),
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: colorScheme.outlineVariant,
+              color: colors.outlineVariant.withValues(alpha: 0.65),
             ),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.search_rounded,
+                color: colors.primary,
                 size: 22,
-                color: colorScheme.onSurfaceVariant,
               ),
-
               const SizedBox(width: 11),
-
               Expanded(
                 child: Text(
-                  'Search destinations, places...',
+                  'Search destinations...',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
+              ),
+              Icon(
+                Icons.arrow_forward_rounded,
+                color: colors.primary,
+                size: 19,
               ),
             ],
           ),

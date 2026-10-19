@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/trip_entity.dart';
@@ -14,152 +15,194 @@ class TripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-    final duration =
-        trip.endDate.difference(trip.startDate).inDays + 1;
+    final start = DateUtils.dateOnly(trip.startDate);
+    final end = DateUtils.dateOnly(trip.endDate);
+    final today = DateUtils.dateOnly(DateTime.now());
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Ink(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: colorScheme.outlineVariant,
-            width: 1,
+    final duration = end.difference(start).inDays + 1;
+
+    final String status;
+    final Color statusColor;
+
+    if (today.isAfter(end)) {
+      status = 'Completed';
+      statusColor = colors.onSurfaceVariant;
+    } else if (today.isBefore(start)) {
+      status = 'Upcoming';
+      statusColor = colors.primary;
+    } else {
+      status = 'Ongoing';
+      statusColor = Colors.orange;
+    }
+
+    return Material(
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: colors.outlineVariant.withValues(
+                alpha: 0.55,
+              ),
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    Icons.flight_takeoff_rounded,
-                    color: colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        trip.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Trip title and status
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(
+                        alpha: 0.10,
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        '$duration ${duration == 1 ? 'day' : 'days'} trip',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 18,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 22),
-
-            Row(
-              children: [
-                Expanded(
-                  child: _Location(
-                    label: 'FROM',
-                    location: trip.origin,
-                    alignment: CrossAxisAlignment.start,
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.flight_rounded,
-                        size: 20,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: 48,
-                        height: 1,
-                        color: colorScheme.outlineVariant,
-                      ),
-                    ],
-                  ),
-                ),
-
-                Expanded(
-                  child: _Location(
-                    label: 'TO',
-                    location: trip.destination,
-                    alignment: CrossAxisAlignment.end,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            Divider(
-              height: 1,
-              color: colorScheme.outlineVariant,
-            ),
-
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_month_outlined,
-                  size: 19,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${_formatDate(trip.startDate)} - '
-                        '${_formatDate(trip.endDate)}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.luggage_outlined,
+                      color: colors.primary,
+                      size: 21,
                     ),
                   ),
+
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: Text(
+                      trip.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      status,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              // Route
+              Row(
+                children: [
+                  Icon(
+                    Icons.route_rounded,
+                    size: 19,
+                    color: colors.primary,
+                  ),
+
+                  const SizedBox(width: 9),
+
+                  Expanded(
+                    child: Text(
+                      '${trip.origin}  →  ${trip.destination}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 21,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              Divider(
+                height: 1,
+                color: colors.outlineVariant.withValues(
+                  alpha: 0.45,
                 ),
-                if (trip.budget != null)
+              ),
+
+              const SizedBox(height: 12),
+
+              // Date, duration and budget
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_month_outlined,
+                    size: 16,
+                    color: colors.onSurfaceVariant,
+                  ),
+
+                  const SizedBox(width: 5),
+
+                  Flexible(
+                    child: Text(
+                      '${_formatDate(trip.startDate)} - '
+                          '${_formatDate(trip.endDate)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
                   Text(
-                    '₹${trip.budget!.toStringAsFixed(0)}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.primary,
+                    '• $duration ${duration == 1 ? 'day' : 'days'}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
-              ],
-            ),
-          ],
+
+                  if (trip.budget != null) ...[
+                    const Spacer(),
+
+                    Text(
+                      '₹${_formatBudget(trip.budget!)}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -167,64 +210,28 @@ class TripCard extends StatelessWidget {
 
   static String _formatDate(DateTime date) {
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
 
     return '${date.day} ${months[date.month - 1]}';
   }
-}
 
-class _Location extends StatelessWidget {
-  final String label;
-  final String location;
-  final CrossAxisAlignment alignment;
+  static String _formatBudget(double value) {
+    if (value >= 100000) {
+      final amount = value / 100000;
+      return '${amount.toStringAsFixed(
+        value % 100000 == 0 ? 0 : 1,
+      )}L';
+    }
 
-  const _Location({
-    required this.label,
-    required this.location,
-    required this.alignment,
-  });
+    if (value >= 1000) {
+      final amount = value / 1000;
+      return '${amount.toStringAsFixed(
+        value % 1000 == 0 ? 0 : 1,
+      )}K';
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: alignment,
-      children: [
-        Text(
-          label,
-          style: textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          location,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: alignment == CrossAxisAlignment.end
-              ? TextAlign.end
-              : TextAlign.start,
-          style: textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
+    return value.toStringAsFixed(0);
   }
 }

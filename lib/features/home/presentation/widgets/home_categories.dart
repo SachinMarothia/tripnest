@@ -1,37 +1,47 @@
+
 import 'package:flutter/material.dart';
 
 class HomeCategories extends StatelessWidget {
-  const HomeCategories({super.key});
+  final ValueChanged<String> onCategorySelected;
+
+  const HomeCategories({
+    super.key,
+    required this.onCategorySelected,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         Expanded(
           child: _CategoryItem(
             icon: Icons.landscape_outlined,
             label: 'Mountains',
+            onTap: () => onCategorySelected('Mountains'),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _CategoryItem(
             icon: Icons.beach_access_outlined,
             label: 'Beaches',
+            onTap: () => onCategorySelected('Beaches'),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _CategoryItem(
             icon: Icons.location_city_outlined,
             label: 'Cities',
+            onTap: () => onCategorySelected('Cities'),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _CategoryItem(
             icon: Icons.more_horiz_rounded,
             label: 'More',
+            onTap: () => onCategorySelected('All'),
           ),
         ),
       ],
@@ -42,10 +52,12 @@ class HomeCategories extends StatelessWidget {
 class _CategoryItem extends StatelessWidget {
   final IconData icon;
   final String label;
+  final VoidCallback onTap;
 
   const _CategoryItem({
     required this.icon,
     required this.label,
+    required this.onTap,
   });
 
   @override
@@ -53,40 +65,36 @@ class _CategoryItem extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return InkWell(
-      onTap: () {
-        // Explore filtering will be connected later.
-      },
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 12,
-          horizontal: 4,
-        ),
-        decoration: BoxDecoration(
-          color: colorScheme.primary.withValues(
-            alpha: 0.07,
+    return Material(
+      color: colorScheme.primary.withValues(alpha: 0.07),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 16,
+            horizontal: 4,
           ),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 27,
-              color: colorScheme.primary,
-            ),
-            const SizedBox(height: 7),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 27,
+                color: colorScheme.primary,
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

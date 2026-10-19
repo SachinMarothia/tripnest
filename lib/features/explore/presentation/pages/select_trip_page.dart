@@ -76,7 +76,7 @@ class SelectTripPage extends StatelessWidget {
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: state.trips.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                 const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final trip = state.trips[index];
