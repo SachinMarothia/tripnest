@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../explore/data/datasources/local_destination_data.dart';
 import '../../../trips/domain/entities/trip_entity.dart';
 
 class UpcomingTripCard extends StatelessWidget {
@@ -12,9 +13,30 @@ class UpcomingTripCard extends StatelessWidget {
     this.onTap,
   });
 
+  ImageProvider _getCoverImage() {
+    final destination = trip.destination.trim().toLowerCase();
+
+    for (final place in LocalDestinationData.destinations) {
+      final placeName = place.name.toLowerCase();
+
+      if (destination == placeName ||
+          destination.contains(placeName)) {
+        return AssetImage(place.imagePath);
+      }
+    }
+
+    return const AssetImage(
+      'assets/images/trip_default_cover.png',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final start = DateUtils.dateOnly(trip.startDate);
+    final end = DateUtils.dateOnly(trip.endDate);
+
+    final durationDays = end.difference(start).inDays + 1;
 
     return Material(
       color: Colors.transparent,
@@ -24,10 +46,8 @@ class UpcomingTripCard extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            image: const DecorationImage(
-              image: AssetImage(
-                'assets/images/trip_default_cover.png',
-              ),
+            image: DecorationImage(
+              image: _getCoverImage(),
               fit: BoxFit.cover,
             ),
             boxShadow: [
@@ -60,19 +80,32 @@ class UpcomingTripCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 Row(
                   children: [
                     _StatusBadge(
                       startDate: trip.startDate,
+                      endDate: trip.endDate,
                     ),
+                    const SizedBox(width: 8),
+                    if (durationDays > 0)
+                      Flexible(
+                        child: Text(
+                          '$durationDays ${durationDays == 1 ? 'day' : 'days'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     const Spacer(),
                     Container(
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(
-                          alpha: 0.18,
-                        ),
+                        color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -84,15 +117,16 @@ class UpcomingTripCard extends StatelessWidget {
                   ],
                 ),
 
+
                 const Spacer(),
 
                 Text(
                   trip.title,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: Colors.white,
-                    fontSize: 25,
+                    fontSize: 23,
                     height: 1.1,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.4,
@@ -254,41 +288,40 @@ class _BudgetChip extends StatelessWidget {
   }
 }
 
+
 class _StatusBadge extends StatelessWidget {
   final DateTime startDate;
+  final DateTime endDate;
 
   const _StatusBadge({
     required this.startDate,
+    required this.endDate,
   });
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
 
-    final today = DateTime(
-      now.year,
-      now.month,
-      now.day,
-    );
-
-    final tripDate = DateTime(
-      startDate.year,
-      startDate.month,
-      startDate.day,
-    );
-
-    final days = tripDate.difference(today).inDays;
+    final today = DateUtils.dateOnly(now);
+    final start = DateUtils.dateOnly(startDate);
+    final end = DateUtils.dateOnly(endDate);
 
     late final String label;
 
-    if (days < 0) {
+    if (today.isAfter(end)) {
+      label = 'Completed';
+    } else if (!today.isBefore(start)) {
       label = 'Ongoing';
-    } else if (days == 0) {
-      label = 'Today';
-    } else if (days == 1) {
-      label = 'Tomorrow';
     } else {
-      label = '$days days left';
+      final days = start.difference(today).inDays;
+
+      if (days == 1) {
+        label = 'Tomorrow';
+      } else if (days == 0) {
+        label = 'Today';
+      } else {
+        label = '$days days left';
+      }
     }
 
     return Container(
@@ -297,7 +330,7 @@ class _StatusBadge extends StatelessWidget {
         vertical: 7,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: Colors.white.withValues(alpha: 0.94),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Text(

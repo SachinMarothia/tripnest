@@ -138,51 +138,6 @@ class _AddItineraryItemPageState extends State<AddItineraryItemPage> {
     });
   }
 
-  void _onLocationChanged(String query) {
-    _searchDebounce?.cancel();
-
-    final version = ++_locationSearchVersion;
-
-    setState(() {
-      _locationSuggestions = [];
-      _locationSearchError = null;
-      _isSearchingLocation = false;
-    });
-
-    final trimmedQuery = query.trim();
-
-    if (trimmedQuery.length < 3) return;
-
-    _searchDebounce = Timer(
-      const Duration(milliseconds: 1100),
-          () async {
-        if (!mounted || version != _locationSearchVersion) return;
-
-        setState(() {
-          _isSearchingLocation = true;
-        });
-
-        try {
-          final results = await sl<SearchPlaces>()(trimmedQuery);
-
-          if (!mounted || version != _locationSearchVersion) return;
-
-          setState(() {
-            _locationSuggestions = results;
-            _isSearchingLocation = false;
-          });
-        } catch (_) {
-          if (!mounted || version != _locationSearchVersion) return;
-
-          setState(() {
-            _locationSuggestions = [];
-            _isSearchingLocation = false;
-            _locationSearchError = 'Unable to search locations';
-          });
-        }
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

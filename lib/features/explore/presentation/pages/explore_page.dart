@@ -10,18 +10,58 @@ import '../bloc/explore_state.dart';
 import '../widgets/explore_destination_card.dart';
 import 'destination_details_page.dart';
 
+
 class ExplorePage extends StatefulWidget {
-  const ExplorePage({super.key});
+  final String initialCategory;
+
+  const ExplorePage({
+    super.key,
+    this.initialCategory = 'All',
+  });
 
   @override
   State<ExplorePage> createState() => _ExplorePageState();
 }
 
+
 class _ExplorePageState extends State<ExplorePage> {
   final TextEditingController _searchController =
   TextEditingController();
 
-  String _selectedCategory = 'All';
+  late String _selectedCategory;
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    _selectedCategory = _categories.contains(
+      widget.initialCategory,
+    )
+        ? widget.initialCategory
+        : 'All';
+  }
+
+
+  @override
+  void didUpdateWidget(covariant ExplorePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.initialCategory != widget.initialCategory) {
+      _selectedCategory = _categories.contains(
+        widget.initialCategory,
+      )
+          ? widget.initialCategory
+          : 'All';
+
+      _searchController.clear();
+
+      context.read<ExploreBloc>().add(
+        const ExploreCleared(),
+      );
+    }
+  }
+
 
   final List<String> _categories = const [
     'All',
@@ -189,7 +229,7 @@ class _ExplorePageState extends State<ExplorePage> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: _categories.length,
-                    separatorBuilder: (_, __) =>
+                    separatorBuilder: (_, _) =>
                     const SizedBox(width: 9),
                     itemBuilder: (context, index) {
                       final category = _categories[index];
@@ -201,6 +241,12 @@ class _ExplorePageState extends State<ExplorePage> {
                         selected: isSelected,
                         showCheckmark: false,
                         onSelected: (_) {
+                          _searchController.clear();
+
+                          context.read<ExploreBloc>().add(
+                            const ExploreCleared(),
+                          );
+
                           setState(() {
                             _selectedCategory = category;
                           });
@@ -341,7 +387,7 @@ class _ExplorePageState extends State<ExplorePage> {
         physics:
         const NeverScrollableScrollPhysics(),
         itemCount: state.places.length,
-        separatorBuilder: (_, __) =>
+        separatorBuilder: (_, _) =>
         const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final place = state.places[index];
