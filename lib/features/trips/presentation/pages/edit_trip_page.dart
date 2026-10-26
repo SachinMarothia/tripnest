@@ -29,6 +29,7 @@ class _EditTripPageState extends State<EditTripPage> {
 
   late DateTime _startDate;
   late DateTime _endDate;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -77,7 +78,7 @@ class _EditTripPageState extends State<EditTripPage> {
       lastDate: DateTime(DateTime.now().year + 5),
     );
 
-    if (selectedDate == null) return;
+    if (selectedDate == null || !mounted) return;
 
     setState(() {
       _startDate = selectedDate;
@@ -98,7 +99,7 @@ class _EditTripPageState extends State<EditTripPage> {
       lastDate: DateTime(DateTime.now().year + 5),
     );
 
-    if (selectedDate == null) return;
+    if (selectedDate == null || !mounted) return;
 
     setState(() {
       _endDate = selectedDate;
@@ -106,6 +107,8 @@ class _EditTripPageState extends State<EditTripPage> {
   }
 
   void _saveChanges() {
+    if (_isSaving) return;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -127,6 +130,10 @@ class _EditTripPageState extends State<EditTripPage> {
           : double.parse(_budgetController.text.trim()),
     );
 
+    setState(() {
+      _isSaving = true;
+    });
+
     context.read<TripsBloc>().add(
       TripUpdateRequested(
         trip: updatedTrip,
@@ -147,6 +154,9 @@ class _EditTripPageState extends State<EditTripPage> {
           }
 
           if (state is TripsFailure) {
+            setState(() {
+              _isSaving = false;
+            });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
@@ -155,7 +165,7 @@ class _EditTripPageState extends State<EditTripPage> {
           }
         },
         builder: (context, state) {
-          final isLoading = state is TripsLoading;
+          final isLoading = state is TripsLoading || _isSaving;
 
           return SafeArea(
             child: SingleChildScrollView(

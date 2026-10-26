@@ -254,81 +254,116 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
 
+        Text(
+          'Trip Overview',
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
+
+        const SizedBox(height: 16),
+
         TripOverviewCard(trip: trip),
 
         const SizedBox(height: 14),
 
-        Material(
+
+        Card(
+          elevation: 0,
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: Theme.of(context)
+                  .colorScheme
+                  .outlineVariant
+                  .withValues(alpha: 0.65),
+            ),
+          ),
           child: InkWell(
+            borderRadius: BorderRadius.circular(20),
             onTap: () => _openExpenses(trip),
-            borderRadius: BorderRadius.circular(18),
-            child: Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .outlineVariant
-                      .withValues(alpha: 0.55),
-                ),
-              ),
-              child: Row(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                        child: Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Expense Tracker',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Manage your trip budget and expenses',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                  if (trip.budget != null) ...[
+                    const SizedBox(height: 12),
+                    Divider(
+                      height: 1,
                       color: Theme.of(context)
                           .colorScheme
-                          .primary
-                          .withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(12),
+                          .outlineVariant
+                          .withValues(alpha: 0.65),
                     ),
-                    child: Icon(
-                      Icons.account_balance_wallet_outlined,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 21,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        const Text('Trip Budget'),
                         Text(
-                          'Expense Tracker',
+                          '₹${trip.budget!.toStringAsFixed(2)}',
                           style: Theme.of(context)
                               .textTheme
-                              .titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Manage your trip expenses',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
+                              .bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
-                  ),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  ],
                 ],
               ),
             ),
           ),
         ),
+
 
 
         const SizedBox(height: 14),

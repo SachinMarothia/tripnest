@@ -28,6 +28,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
 
   DateTime? _startDate;
   DateTime? _endDate;
+  bool _isCreating = false;
 
 
   @override
@@ -62,7 +63,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
       lastDate: DateTime(today.year + 5),
     );
 
-    if (selectedDate == null) return;
+    if (selectedDate == null || !mounted) return;
 
     setState(() {
       _startDate = selectedDate;
@@ -90,7 +91,7 @@ class _CreateTripPageState extends State<CreateTripPage> {
       lastDate: DateTime(_startDate!.year + 5),
     );
 
-    if (selectedDate == null) return;
+    if (selectedDate == null || !mounted) return;
 
     setState(() {
       _endDate = selectedDate;
@@ -98,6 +99,8 @@ class _CreateTripPageState extends State<CreateTripPage> {
   }
 
   void _createTrip() {
+    if (_isCreating) return;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -138,6 +141,10 @@ class _CreateTripPageState extends State<CreateTripPage> {
           : double.parse(_budgetController.text.trim()),
     );
 
+    setState(() {
+      _isCreating = true;
+    });
+
     context.read<TripsBloc>().add(
       TripCreateRequested(
         trip: trip,
@@ -151,194 +158,197 @@ class _CreateTripPageState extends State<CreateTripPage> {
       appBar: AppBar(
         title: const Text('Create Trip'),
       ),
-        body: BlocConsumer<TripsBloc, TripsState>(
-          listener: (context, state) {
-            if (state is TripOperationSuccess) {
-              context.pop(true);
-            }
+      body: BlocConsumer<TripsBloc, TripsState>(
+        listener: (context, state) {
+          if (state is TripOperationSuccess) {
+            context.pop(true);
+          }
 
-            if (state is TripsFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            final isLoading = state is TripsLoading;
-
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Plan your next adventure',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        'Add the basic details for your trip.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      TextFormField(
-                        controller: _titleController,
-                        enabled: !isLoading,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'Trip name',
-                          hintText: 'e.g. Goa Vacation',
-                          prefixIcon: Icon(Icons.luggage_outlined),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a trip name.';
-                          }
-
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _originController,
-                        enabled: !isLoading,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'From',
-                          hintText: 'e.g. Jaipur, Rajasthan',
-                          prefixIcon: Icon(Icons.trip_origin_rounded),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter the starting location.';
-                          }
-
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      TextFormField(
-                        controller: _destinationController,
-                        enabled: !isLoading,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'To',
-                          hintText: 'e.g. Goa, India',
-                          prefixIcon: Icon(Icons.location_on_outlined),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter the destination.';
-                          }
-
-                          return null;
-                        },
-                      ),
-
-                      SizedBox(height: 16,),
-                      TextFormField(
-                        controller: _budgetController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'Budget',
-                          hintText: '30000',
-                          prefixIcon: Icon(Icons.currency_rupee_rounded),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return null;
-                          }
-
-                          final budget = double.tryParse(value.trim());
-
-                          if (budget == null) {
-                            return 'Please enter a valid budget.';
-                          }
-
-                          if (budget < 0) {
-                            return 'Budget cannot be negative.';
-                          }
-
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      TextFormField(
-                        controller: _descriptionController,
-                        enabled: !isLoading,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                          hintText: 'What is this trip about?',
-                          alignLabelWithHint: true,
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      OutlinedButton.icon(
-                        onPressed: isLoading ? null : _selectStartDate,
-                        icon: const Icon(Icons.calendar_today_outlined),
-                        label: Text(
-                          _startDate == null
-                              ? 'Select start date'
-                              : 'Start: ${_startDate!.day}/${_startDate!.month}/${_startDate!.year}',
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      OutlinedButton.icon(
-                        onPressed: isLoading ? null : _selectEndDate,
-                        icon: const Icon(Icons.event_outlined),
-                        label: Text(
-                          _endDate == null
-                              ? 'Select end date'
-                              : 'End: ${_endDate!.day}/${_endDate!.month}/${_endDate!.year}',
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      ElevatedButton.icon(
-                        onPressed: isLoading ? null : _createTrip,
-                        icon: isLoading
-                            ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        )
-                            : const Icon(Icons.add),
-                        label: Text(
-                          isLoading ? 'Creating...' : 'Create Trip',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+          if (state is TripsFailure) {
+            setState(() {
+              _isCreating = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
               ),
             );
-          },
-        ),
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is TripsLoading || _isCreating;
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Plan your next adventure',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Add the basic details for your trip.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    TextFormField(
+                      controller: _titleController,
+                      enabled: !isLoading,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Trip name',
+                        hintText: 'e.g. Goa Vacation',
+                        prefixIcon: Icon(Icons.luggage_outlined),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a trip name.';
+                        }
+
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _originController,
+                      enabled: !isLoading,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'From',
+                        hintText: 'e.g. Jaipur, Rajasthan',
+                        prefixIcon: Icon(Icons.trip_origin_rounded),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter the starting location.';
+                        }
+
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      controller: _destinationController,
+                      enabled: !isLoading,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'To',
+                        hintText: 'e.g. Goa, India',
+                        prefixIcon: Icon(Icons.location_on_outlined),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter the destination.';
+                        }
+
+                        return null;
+                      },
+                    ),
+
+                    SizedBox(height: 16,),
+                    TextFormField(
+                      controller: _budgetController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Budget',
+                        hintText: '30000',
+                        prefixIcon: Icon(Icons.currency_rupee_rounded),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return null;
+                        }
+
+                        final budget = double.tryParse(value.trim());
+
+                        if (budget == null) {
+                          return 'Please enter a valid budget.';
+                        }
+
+                        if (budget < 0) {
+                          return 'Budget cannot be negative.';
+                        }
+
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      controller: _descriptionController,
+                      enabled: !isLoading,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        hintText: 'What is this trip about?',
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    OutlinedButton.icon(
+                      onPressed: isLoading ? null : _selectStartDate,
+                      icon: const Icon(Icons.calendar_today_outlined),
+                      label: Text(
+                        _startDate == null
+                            ? 'Select start date'
+                            : 'Start: ${_startDate!.day}/${_startDate!.month}/${_startDate!.year}',
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    OutlinedButton.icon(
+                      onPressed: isLoading ? null : _selectEndDate,
+                      icon: const Icon(Icons.event_outlined),
+                      label: Text(
+                        _endDate == null
+                            ? 'Select end date'
+                            : 'End: ${_endDate!.day}/${_endDate!.month}/${_endDate!.year}',
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    ElevatedButton.icon(
+                      onPressed: isLoading ? null : _createTrip,
+                      icon: isLoading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Icon(Icons.add),
+                      label: Text(
+                        isLoading ? 'Creating...' : 'Create Trip',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

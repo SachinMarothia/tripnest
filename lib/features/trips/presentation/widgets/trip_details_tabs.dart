@@ -21,12 +21,10 @@ class TripDetailsTabs extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(
-          alpha: 0.65,
-        ),
-        borderRadius: BorderRadius.circular(15),
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
@@ -38,7 +36,7 @@ class TripDetailsTabs extends StatelessWidget {
               onTap: () => onChanged(TripDetailsTab.overview),
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 5),
           Expanded(
             child: _TabItem(
               label: 'Itinerary',
@@ -73,34 +71,36 @@ class _TabItem extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(
-            vertical: 10,
-            horizontal: 8,
+            vertical: 12,
+            horizontal: 10,
           ),
           decoration: BoxDecoration(
-            color: isSelected
-                ? colors.primary.withValues(alpha: 0.12)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(
-              color: colors.primary.withValues(alpha: 0.25),
-            )
-                : Border.all(color: Colors.transparent),
+            color: isSelected ? colors.surface : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: isSelected
+                ? [
+              BoxShadow(
+                color: colors.shadow.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ]
+                : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 18,
+                size: 19,
                 color: isSelected
                     ? colors.primary
                     : colors.onSurfaceVariant,
