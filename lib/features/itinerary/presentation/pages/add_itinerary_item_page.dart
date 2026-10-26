@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'dart:async';
-
 import '../../../../injection_container.dart';
 import '../../../explore/domain/entities/place_entity.dart';
 import '../../../explore/domain/usecases/search_places.dart';
@@ -47,8 +45,6 @@ class _AddItineraryItemPageState extends State<AddItineraryItemPage> {
 
   double? _selectedLatitude;
   double? _selectedLongitude;
-
-  Timer? _searchDebounce;
 
   List<PlaceEntity> _locationSuggestions = [];
 
@@ -96,7 +92,6 @@ class _AddItineraryItemPageState extends State<AddItineraryItemPage> {
 
   @override
   void dispose() {
-    _searchDebounce?.cancel();
     _locationSearchVersion++;
 
     _titleController.dispose();
@@ -110,9 +105,16 @@ class _AddItineraryItemPageState extends State<AddItineraryItemPage> {
     final startDate = DateUtils.dateOnly(widget.tripStartDate);
     final endDate = DateUtils.dateOnly(widget.tripEndDate);
 
+    final currentDate = DateUtils.dateOnly(_selectedDate ?? startDate);
+    final initialDate = currentDate.isBefore(startDate)
+        ? startDate
+        : currentDate.isAfter(endDate)
+        ? endDate
+        : currentDate;
+
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? startDate,
+      initialDate: initialDate,
       firstDate: startDate,
       lastDate: endDate,
       helpText: 'Select Activity Date',
@@ -404,17 +406,17 @@ class _AddItineraryItemPageState extends State<AddItineraryItemPage> {
     }
 
     final activity = ItineraryEntity(
-      id: widget.activity?.id ?? '',
-      tripId: widget.tripId,
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      date: _selectedDate!,
-      hour: _selectedTime?.hour,
-      minute: _selectedTime?.minute,
-      location: _locationController.text.trim(),
-      latitude: _selectedLatitude,
-      longitude: _selectedLongitude,
-      isCompleted: widget.activity?.isCompleted ?? false
+        id: widget.activity?.id ?? '',
+        tripId: widget.tripId,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        date: _selectedDate!,
+        hour: _selectedTime?.hour,
+        minute: _selectedTime?.minute,
+        location: _locationController.text.trim(),
+        latitude: _selectedLatitude,
+        longitude: _selectedLongitude,
+        isCompleted: widget.activity?.isCompleted ?? false
     );
 
     setState(() {
@@ -458,6 +460,9 @@ class _AddItineraryItemPageState extends State<AddItineraryItemPage> {
       setState(() {
         _locationSuggestions = results;
         _isSearchingLocation = false;
+        _locationSearchError = results.isEmpty
+            ? 'No matching locations found. Try another search.'
+            : null;
       });
     } catch (_) {
       if (!mounted || version != _locationSearchVersion) return;
